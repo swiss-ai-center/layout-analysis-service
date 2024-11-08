@@ -19,15 +19,20 @@ from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
 
 # Imports required by the service's model
-# TODO: 1. ADD REQUIRED IMPORTS (ALSO IN THE REQUIREMENTS.TXT)
+from utils import extract_images_from_zip, save_image
+import cv2
+import numpy as np
+from model.main_ import main as main_model
+from paddleocr.ppstructure.utility import parse_args
+
 
 settings = get_settings()
 
 
 class MyService(Service):
-    # TODO: 2. CHANGE THIS DESCRIPTION
+
     """
-    My service model
+    My layout analysis service model
     """
 
     # Any additional fields must be excluded for Pydantic to work
@@ -37,8 +42,8 @@ class MyService(Service):
     def __init__(self):
         super().__init__(
             # TODO: 3. CHANGE THE SERVICE NAME AND SLUG
-            name="My Service",
-            slug="my-service",
+            name="My Layout Analysis service",
+            slug="my-layout-analysis-service",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
@@ -46,16 +51,18 @@ class MyService(Service):
             # TODO: 4. CHANGE THE INPUT AND OUTPUT FIELDS, THE TAGS AND THE HAS_AI VARIABLE
             data_in_fields=[
                 FieldDescription(
-                    name="image",
+                    name="images",
                     type=[
-                        FieldDescriptionType.IMAGE_PNG,
-                        FieldDescriptionType.IMAGE_JPEG,
+                        FieldDescriptionType.IMAGE_JPEG
                     ],
                 ),
             ],
             data_out_fields=[
                 FieldDescription(
-                    name="result", type=[FieldDescriptionType.APPLICATION_JSON]
+                    name="result_text", type=[FieldDescriptionType.APPLICATION_JSON]
+                ),
+                FieldDescription(
+                    name="result_img", type=[FieldDescriptionType.IMAGE_PNG, FieldDescriptionType.IMAGE_JPEG]
                 ),
             ],
             tags=[
@@ -64,24 +71,27 @@ class MyService(Service):
                     acronym=ExecutionUnitTagAcronym.IMAGE_PROCESSING,
                 ),
             ],
-            has_ai=False,
+            has_ai=True,
             # OPTIONAL: CHANGE THE DOCS URL TO YOUR SERVICE'S DOCS
             docs_url="https://docs.swiss-ai-center.ch/reference/core-concepts/service/",
         )
         self._logger = get_logger(settings)
 
-    # TODO: 5. CHANGE THE PROCESS METHOD (CORE OF THE SERVICE)
+    # TODO: 6. CHANGE THE PROCESS METHOD (CORE OF THE SERVICE)
     def process(self, data):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
         # The objects in the data variable are always bytes. It is necessary to convert them to the desired type
         # before using them.
-        # raw = data["image"].data
-        # input_type = data["image"].type
-        # ... do something with the raw data
+        save_image(data)
+        args = parse_args()
+        res, img = main_model(args, "img_dir")
+
 
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
-            "result": TaskData(data=..., type=FieldDescriptionType.APPLICATION_JSON)
+            "result_text": TaskData(data=res, type=FieldDescriptionType.APPLICATION_JSON),
+
+            "result_img": TaskData(data=img, type=FieldDescriptionType.IMAGE_PNG)
         }
 
 
@@ -115,7 +125,9 @@ async def lifespan(app: FastAPI):
         for engine_url in settings.engine_urls:
             announced = False
             while not announced and retries > 0:
-                announced = await service_service.announce_service(my_service, engine_url)
+                announced = await service_service.announce_service(
+                    my_service, engine_url
+                )
                 retries -= 1
                 if not announced:
                     time.sleep(settings.engine_announce_retry_delay)
@@ -135,19 +147,22 @@ async def lifespan(app: FastAPI):
         await service_service.graceful_shutdown(my_service, engine_url)
 
 
-# TODO: 6. CHANGE THE API DESCRIPTION AND SUMMARY
-api_description = """My service
-bla bla bla...
+# TODO: 7. CHANGE THE API DESCRIPTION AND SUMMARY
+api_description = """My layout analysis service takes an input image and processes it to extract detailed structural information. 
+The service generates output images annotated with bounding boxes (bboxes) that highlight detected elements, making it easy to visualize the layout. 
+Additionally, it provides a JSON-formatted result that describes these detected regions, including their positions and attributes, 
+facilitating seamless integration with data workflows and further analysis. 
+Ideal for document processing, digitization, and automated layout understanding, 
+this service ensures accuracy and clarity in presenting image-based layout insights.
 """
-api_summary = """My service
-bla bla bla...
+api_summary = """My layout analysis detect part of an image-based document using PP-PicoDet 
 """
 
 # Define the FastAPI application with information
-# TODO: 7. CHANGE THE API TITLE, VERSION, CONTACT AND LICENSE
+# TODO: 8. CHANGE THE API TITLE, VERSION, CONTACT AND LICENSE
 app = FastAPI(
     lifespan=lifespan,
-    title="Sample Service API.",
+    title="My layout analysis service API.",
     description=api_description,
     version="0.0.1",
     contact={
