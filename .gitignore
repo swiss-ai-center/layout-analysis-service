@@ -1,1 +1,26 @@
-# Check parent `.gitignore` file for complete ignored files
+## Python
+
+# Environments
+.venv
+venv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Pytest cache
+.pytest_cache
+
+# Pytest Coverage
+.coverage
+
+## IntelliJ's IDEs
+
+.idea
+
+## Visual Studio Code
+
+.vscode
+
+## macOS
+
+.DS_Store
