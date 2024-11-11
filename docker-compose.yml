@@ -18,7 +18,7 @@ services:
         pip install -r requirements.txt -r requirements-all.txt &&
         # Run the service
         cd src &&
-        uvicorn --reload --host 0.0.0.0 --port 7575 main:app
+        exec uvicorn --reload --host 0.0.0.0 --port 7575 main:app
       "
     environment:
       - ENGINE_URLS=["http://host.docker.internal:8080"]

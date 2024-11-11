@@ -1,24 +1,6 @@
 # Base image
 FROM python:3.11
 
-# Install necessary dependencies for OpenCV and libGL
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libgl1-mesa-dri \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
-    libglib2.0-0 \
-    ffmpeg \
-    python3-opencv \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create a symbolic link for libGL.so.1 in the system library path
-RUN ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/local/lib/libGL.so.1
-
-# Set library path for OpenCV
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-
 # Work directory
 WORKDIR /app
 

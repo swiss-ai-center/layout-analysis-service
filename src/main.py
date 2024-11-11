@@ -19,11 +19,13 @@ from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
 
 # Imports required by the service's model
-from utils import extract_images_from_zip, save_image
+from utils import custom_parse_args, save_image, CustomEncoder
+from common_code.tasks.service import get_extension
 import cv2
 import numpy as np
+import json
 from model.main_ import main as main_model
-from paddleocr.ppstructure.utility import parse_args
+import sys
 
 
 settings = get_settings()
@@ -82,16 +84,35 @@ class MyService(Service):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
         # The objects in the data variable are always bytes. It is necessary to convert them to the desired type
         # before using them.
-        save_image(data)
-        args = parse_args()
-        res, img = main_model(args, "img_dir")
+
+        # Pass specific arguments directly
+        args = custom_parse_args(
+            vis_font_path="Fonts/Arial.ttf",
+            use_gpu=False,
+            image_dir="img_dir",
+            layout_model_dir="model/inference/picodet_lcnet_x1_0_layout_infer",
+            layout_dict_path="model/dict/layout_publaynet_dict.txt",
+            output="../output",
+            table=False,
+            ocr=False,
+        )
+
+        # Execute main_model
+        _, input_type = save_image(data)
+        res, img = main_model(args)
+        guessed_extension = get_extension(input_type)
+        is_success, out_buff = cv2.imencode(guessed_extension, img)
+        res = CustomEncoder().encode(res)
 
 
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
             "result_text": TaskData(data=res, type=FieldDescriptionType.APPLICATION_JSON),
 
-            "result_img": TaskData(data=img, type=FieldDescriptionType.IMAGE_PNG)
+            "result_img": TaskData(
+                data=out_buff.tobytes(),
+                type=input_type,
+            )
         }
 
 

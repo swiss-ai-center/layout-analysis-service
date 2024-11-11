@@ -221,14 +221,14 @@ def load_structure_res(output_folder, img_name, img_idx=0):
 
 
 
-def main(args, img_dir):
-    args.use_gpu = False
+def main(args):
+    """args.use_gpu = False
     args.image_dir = img_dir
     args.layout_model_dir = "inference/picodet_lcnet_x1_0_layout_infer"
     args.layout_dict_path = "dict\layout_publaynet_dict.txt"
     args.output = "../output"
     args.table = False
-    args.ocr = False
+    args.ocr = False"""
     image_file_list = get_image_file_list(args.image_dir)
     image_file_list = image_file_list
     image_file_list = image_file_list[args.process_id :: args.total_process_num]
@@ -263,7 +263,7 @@ def main(args, img_dir):
             )
             os.makedirs(os.path.join(save_folder, img_name), exist_ok=True)
             if structure_sys.mode == "structure" and res != []:
-                draw_img = draw_structure_result(img, res, font_path = r'C:\Windows\Fonts\Arial.ttf')
+                draw_img = draw_structure_result(img, res, font_path=args.vis_font_path)
                 save_structure_res(res, save_folder, img_name, index)
             if res != []:
                 cv2.imwrite(img_save_path, draw_img)

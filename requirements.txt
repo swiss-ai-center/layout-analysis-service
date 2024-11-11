@@ -9,7 +9,6 @@ lmdb==1.5.1
 tqdm==4.66.5
 numpy==1.26.4
 RapidFuzz==3.10.0
-opencv-python==4.10.0.84
 Cython==3.0.11
 pillow==11.0.0
 PyYAML==6.0.1
