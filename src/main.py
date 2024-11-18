@@ -26,7 +26,7 @@ import numpy as np
 import json
 from model.main_ import main as main_model
 import sys
-
+import shutil
 
 settings = get_settings()
 
@@ -43,7 +43,6 @@ class MyService(Service):
 
     def __init__(self):
         super().__init__(
-            # TODO: 3. CHANGE THE SERVICE NAME AND SLUG
             name="My Layout Analysis service",
             slug="my-layout-analysis-service",
             url=settings.service_url,
@@ -103,6 +102,9 @@ class MyService(Service):
         guessed_extension = get_extension(input_type)
         is_success, out_buff = cv2.imencode(guessed_extension, img)
         res = CustomEncoder().encode(res)
+
+        shutil.rmtree("img_dir")
+        shutil.rmtree("../output")
 
 
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields

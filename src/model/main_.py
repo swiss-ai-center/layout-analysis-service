@@ -20,7 +20,9 @@ from paddleocr.ppocr.utils.utility import get_image_file_list, check_and_read
 from paddleocr.ppocr.utils.logging import get_logger
 from paddleocr.tools.infer.predict_system import TextSystem
 from paddleocr.ppstructure.layout.predict_layout import LayoutPredictor
-from paddleocr.ppstructure.utility import parse_args, draw_structure_result, cal_ocr_word_box
+from paddleocr.ppstructure.utility import draw_structure_result, cal_ocr_word_box
+
+from PIL import Image
 
 logger = get_logger()
 
@@ -67,13 +69,7 @@ class StructureSystem(object):
                 h, w = ori_im.shape[:2]
                 layout_res = [dict(bbox=None, label="table", score=0.0)]
 
-            # As reported in issues such as #10270 and #11665, the old
-            # implementation, which recognizes texts from the layout regions,
-            # has problems with OCR recognition accuracy.
-            #
-            # To enhance the OCR recognition accuracy, we implement a patch fix
-            # that first use text_system to detect and recognize all text information
-            # and then filter out relevant texts according to the layout regions.
+
             text_res = None
             if self.text_system is not None:
                 text_res, ocr_time_dict = self._predict_text(img)
@@ -222,13 +218,6 @@ def load_structure_res(output_folder, img_name, img_idx=0):
 
 
 def main(args):
-    """args.use_gpu = False
-    args.image_dir = img_dir
-    args.layout_model_dir = "inference/picodet_lcnet_x1_0_layout_infer"
-    args.layout_dict_path = "dict\layout_publaynet_dict.txt"
-    args.output = "../output"
-    args.table = False
-    args.ocr = False"""
     image_file_list = get_image_file_list(args.image_dir)
     image_file_list = image_file_list
     image_file_list = image_file_list[args.process_id :: args.total_process_num]
@@ -255,7 +244,6 @@ def main(args):
         else:
             imgs = img
 
-        all_res = []
         for index, img in enumerate(imgs):
             res, time_dict = structure_sys(img, img_idx=index)
             img_save_path = os.path.join(
@@ -264,30 +252,29 @@ def main(args):
             os.makedirs(os.path.join(save_folder, img_name), exist_ok=True)
             if structure_sys.mode == "structure" and res != []:
                 draw_img = draw_structure_result(img, res, font_path=args.vis_font_path)
+
+                # Convert the NumPy array to a PIL image
+                if isinstance(draw_img, np.ndarray):
+                    draw_img = Image.fromarray(draw_img)
+
+                # Get the dimensions of the composite image
+                width, height = draw_img.size
+
+                # Calculate the midpoint (to divide into two parts)
+                midpoint = width // 2
+
+                # Crop the left part (the annotated original image)
+                left_part = draw_img.crop((0, 0, midpoint, height))
+
+                # Convert the cropped image back to a NumPy array for further processing
+                left_part_np = np.array(left_part)
+
                 save_structure_res(res, save_folder, img_name, index)
             if res != []:
-                cv2.imwrite(img_save_path, draw_img)
+                cv2.imwrite(img_save_path, left_part_np)
                 logger.info("result save to {}".format(img_save_path))
         logger.info("Predict time : {:.3f}s".format(time_dict["all"]))
 
 
     return load_structure_res(args.output, img_name)
 
-if __name__ == "__main__":
-    args = parse_args()
-
-    if args.use_mp:
-        p_list = []
-        total_process_num = args.total_process_num
-        for process_id in range(total_process_num):
-            cmd = (
-                [sys.executable, "-u"]
-                + sys.argv
-                + ["--process_id={}".format(process_id), "--use_mp={}".format(False)]
-            )
-            p = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stdout)
-            p_list.append(p)
-        for p in p_list:
-            p.wait()
-    else:
-        main(args, img_dir=r"C:\Users\dimitrir.nguinwam\Downloads\img")
