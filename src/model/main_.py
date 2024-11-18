@@ -188,7 +188,9 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
         encoding="utf8",
     ) as f:
         for region in res_cp:
-            roi_img = region.pop("img")
+            region.pop("img")
+            region.pop("res")
+            region.pop("img_idx")
             f.write("{}\n".format(json.dumps(region)))
 
 def load_structure_res(output_folder, img_name, img_idx=0):
