@@ -39,8 +39,8 @@ class MyService(Service):
 
     def __init__(self):
         super().__init__(
-            name="Layout Analysis service",
-            slug="layout-analysis-service",
+            name="Layout Analysis",
+            slug="layout-analysis",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
