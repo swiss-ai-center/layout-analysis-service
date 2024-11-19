@@ -38,7 +38,7 @@ def save_image(data, output_dir="img_dir"):
 
 def custom_parse_args(**kwargs):
     # Temporarily override `sys.argv`
-    import sys
+    import sys  # noqa: E402
     original_argv = sys.argv
     sys.argv = ["main.py"] + [f"--{k}={v}" for k, v in kwargs.items()]
 

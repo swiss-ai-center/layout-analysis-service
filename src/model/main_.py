@@ -1,12 +1,5 @@
 import os
 import sys
-import subprocess
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(__dir__)
-sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../")))
-
-os.environ["FLAGS_allocator_strategy"] = "auto_growth"
 import cv2
 import json
 import numpy as np
@@ -22,6 +15,12 @@ from paddleocr.ppstructure.utility import draw_structure_result, cal_ocr_word_bo
 
 from PIL import Image
 
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(__dir__)
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../")))
+
+os.environ["FLAGS_allocator_strategy"] = "auto_growth"
+
 logger = get_logger()
 
 
@@ -33,7 +32,7 @@ class StructureSystem(object):
         if self.mode == "structure":
             if not args.show_log:
                 logger.setLevel(logging.INFO)
-            if args.layout == False and args.ocr == True:
+            if not args.layout and args.ocr:
                 args.ocr = False
                 logger.warning(
                     "When args.layout is false, args.ocr is automatically set to false"
