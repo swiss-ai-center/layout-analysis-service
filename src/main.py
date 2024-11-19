@@ -167,14 +167,14 @@ async def lifespan(app: FastAPI):
 
 
 
-api_description = """My layout analysis service takes an input image and processes it to extract detailed structural information. 
+api_description = """Layout Analysis service takes an input image and processes it to extract detailed structural information. 
 The service generates output images annotated with bounding boxes (bboxes) that highlight detected elements, making it easy to visualize the layout. 
 Additionally, it provides a JSON-formatted result that describes these detected regions, including their positions and attributes, 
 facilitating seamless integration with data workflows and further analysis. 
 Ideal for document processing, digitization, and automated layout understanding, 
 this service ensures accuracy and clarity in presenting image-based layout insights.
 """
-api_summary = """My layout analysis detect part of an image-based document using PP-PicoDet 
+api_summary = """Layout Analysis detect part of an image-based document using PP-PicoDet 
 """
 
 # Define the FastAPI application with information
