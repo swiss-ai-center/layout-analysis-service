@@ -1,11 +1,8 @@
 import os
-import zipfile
 import numpy as np
 import cv2
-import shutil
 from json import JSONEncoder
 import json
-import io
 from paddleocr.ppstructure.utility import parse_args
 
 
@@ -18,7 +15,7 @@ def save_image(data, output_dir="img_dir"):
     - output_dir: str, the directory where the image will be saved.
 
     Returns:
-    - The file path to the saved image.
+    - The image and the type.
     """
     # Ensure the output directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -40,7 +37,7 @@ def save_image(data, output_dir="img_dir"):
 
 
 def custom_parse_args(**kwargs):
-    # Temporarily override `sys.argv` if necessary
+    # Temporarily override `sys.argv`
     import sys
     original_argv = sys.argv
     sys.argv = ["main.py"] + [f"--{k}={v}" for k, v in kwargs.items()]

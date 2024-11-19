@@ -22,10 +22,7 @@ from contextlib import asynccontextmanager
 from utils import custom_parse_args, save_image, CustomEncoder
 from common_code.tasks.service import get_extension
 import cv2
-import numpy as np
-import json
 from model.main_ import main as main_model
-import sys
 import shutil
 
 settings = get_settings()
@@ -43,13 +40,12 @@ class MyService(Service):
 
     def __init__(self):
         super().__init__(
-            name="My Layout Analysis service",
-            slug="my-layout-analysis-service",
+            name="Layout Analysis service",
+            slug="layout-analysis-service",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
             status=ServiceStatus.AVAILABLE,
-            # TODO: 4. CHANGE THE INPUT AND OUTPUT FIELDS, THE TAGS AND THE HAS_AI VARIABLE
             data_in_fields=[
                 FieldDescription(
                     name="images",
@@ -78,7 +74,7 @@ class MyService(Service):
         )
         self._logger = get_logger(settings)
 
-    # TODO: 6. CHANGE THE PROCESS METHOD (CORE OF THE SERVICE)
+
     def process(self, data):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
         # The objects in the data variable are always bytes. It is necessary to convert them to the desired type
@@ -170,7 +166,7 @@ async def lifespan(app: FastAPI):
         await service_service.graceful_shutdown(my_service, engine_url)
 
 
-# TODO: 7. CHANGE THE API DESCRIPTION AND SUMMARY
+
 api_description = """My layout analysis service takes an input image and processes it to extract detailed structural information. 
 The service generates output images annotated with bounding boxes (bboxes) that highlight detected elements, making it easy to visualize the layout. 
 Additionally, it provides a JSON-formatted result that describes these detected regions, including their positions and attributes, 
@@ -182,7 +178,7 @@ api_summary = """My layout analysis detect part of an image-based document using
 """
 
 # Define the FastAPI application with information
-# TODO: 8. CHANGE THE API TITLE, VERSION, CONTACT AND LICENSE
+
 app = FastAPI(
     lifespan=lifespan,
     title="My layout analysis service API.",
