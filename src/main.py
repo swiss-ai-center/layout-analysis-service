@@ -29,7 +29,6 @@ settings = get_settings()
 
 
 class MyService(Service):
-
     """
     My layout analysis service model
     """
@@ -74,7 +73,6 @@ class MyService(Service):
         )
         self._logger = get_logger(settings)
 
-
     def process(self, data):
         # NOTE that the data is a dictionary with the keys being the field names set in the data_in_fields
         # The objects in the data variable are always bytes. It is necessary to convert them to the desired type
@@ -101,7 +99,6 @@ class MyService(Service):
 
         shutil.rmtree("img_dir")
         shutil.rmtree("../output")
-
 
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
@@ -164,7 +161,6 @@ async def lifespan(app: FastAPI):
     # Shutdown
     for engine_url in settings.engine_urls:
         await service_service.graceful_shutdown(my_service, engine_url)
-
 
 
 api_description = """Layout Analysis service takes an input image and processes it to extract detailed structural information. 

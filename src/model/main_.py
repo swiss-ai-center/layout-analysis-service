@@ -1,4 +1,3 @@
-
 import os
 import sys
 import subprocess
@@ -14,7 +13,6 @@ import numpy as np
 import time
 import logging
 from copy import deepcopy
-
 
 from paddleocr.ppocr.utils.utility import get_image_file_list, check_and_read
 from paddleocr.ppocr.utils.logging import get_logger
@@ -69,7 +67,6 @@ class StructureSystem(object):
                 h, w = ori_im.shape[:2]
                 layout_res = [dict(bbox=None, label="table", score=0.0)]
 
-
             text_res = None
             if self.text_system is not None:
                 text_res, ocr_time_dict = self._predict_text(img)
@@ -88,7 +85,6 @@ class StructureSystem(object):
                     roi_img = ori_im
                 bbox = [x1, y1, x2, y2]
 
-
                 res_list.append(
                     {
                         "type": region["label"].lower(),
@@ -103,7 +99,6 @@ class StructureSystem(object):
             end = time.time()
             time_dict["all"] = end - start
             return res_list, time_dict
-
 
         return None, None
 
@@ -183,15 +178,16 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
     res_cp = deepcopy(res)
     # save res
     with open(
-        os.path.join(excel_save_folder, "res_{}.txt".format(img_idx)),
-        "w",
-        encoding="utf8",
+            os.path.join(excel_save_folder, "res_{}.txt".format(img_idx)),
+            "w",
+            encoding="utf8",
     ) as f:
         for region in res_cp:
             region.pop("img")
             region.pop("res")
             region.pop("img_idx")
             f.write("{}\n".format(json.dumps(region)))
+
 
 def load_structure_res(output_folder, img_name, img_idx=0):
     save_folder = os.path.join(output_folder, "structure")
@@ -217,12 +213,10 @@ def load_structure_res(output_folder, img_name, img_idx=0):
     return results, img
 
 
-
-
 def main(args):
     image_file_list = get_image_file_list(args.image_dir)
     image_file_list = image_file_list
-    image_file_list = image_file_list[args.process_id :: args.total_process_num]
+    image_file_list = image_file_list[args.process_id:: args.total_process_num]
 
     if not args.use_pdf2docx_api:
         structure_sys = StructureSystem(args)
@@ -277,6 +271,4 @@ def main(args):
                 logger.info("result save to {}".format(img_save_path))
         logger.info("Predict time : {:.3f}s".format(time_dict["all"]))
 
-
     return load_structure_res(args.output, img_name)
-
