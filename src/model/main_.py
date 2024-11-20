@@ -221,7 +221,7 @@ def main(args, img):
         os.makedirs(save_folder, exist_ok=True)
 
         img_name = "image"
-        index=0
+        index = 0
 
         res, time_dict = structure_sys(img, img_idx=index)
         img_save_path = os.path.join(
@@ -256,6 +256,5 @@ def main(args, img):
     res_, img_ = load_structure_res(temp_dir.name, img_name)
 
     temp_dir.cleanup()
-
 
     return res_, img_

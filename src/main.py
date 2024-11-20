@@ -103,7 +103,6 @@ class MyService(Service):
         is_success, out_buff = cv2.imencode(guessed_extension, img)
         res = CustomEncoder().encode(res)
 
-
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {
             "result_text": TaskData(data=res, type=FieldDescriptionType.APPLICATION_JSON),
