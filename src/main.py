@@ -19,11 +19,12 @@ from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
 
 # Imports required by the service's model
-from utils import custom_parse_args, save_image, CustomEncoder
+from utils import custom_parse_args, CustomEncoder
 from common_code.tasks.service import get_extension
+import numpy as np
 import cv2
 from model.main_ import main as main_model
-import shutil
+
 
 settings = get_settings()
 
@@ -49,7 +50,7 @@ class MyService(Service):
                 FieldDescription(
                     name="images",
                     type=[
-                        FieldDescriptionType.IMAGE_JPEG
+                        FieldDescriptionType.IMAGE_JPEG, FieldDescriptionType.IMAGE_PNG
                     ],
                 ),
             ],
@@ -90,15 +91,18 @@ class MyService(Service):
             ocr=False,
         )
 
-        # Execute main_model
-        _, input_type = save_image(data)
-        res, img = main_model(args)
+        # Extract the image bytes from data
+        image_bytes = data["images"].data  # Extract the raw bytes of the image
+        input_type = data["images"].type
+
+        # Decode the image from bytes
+        img_ = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), 1)
+
+        res, img = main_model(args, img_)
         guessed_extension = get_extension(input_type)
         is_success, out_buff = cv2.imencode(guessed_extension, img)
         res = CustomEncoder().encode(res)
 
-        shutil.rmtree("img_dir")
-        shutil.rmtree("../output")
 
         # NOTE that the result must be a dictionary with the keys being the field names set in the data_out_fields
         return {

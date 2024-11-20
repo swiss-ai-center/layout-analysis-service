@@ -7,11 +7,12 @@ import time
 import logging
 from copy import deepcopy
 
-from paddleocr.ppocr.utils.utility import get_image_file_list, check_and_read
+
 from paddleocr.ppocr.utils.logging import get_logger
 from paddleocr.tools.infer.predict_system import TextSystem
 from paddleocr.ppstructure.layout.predict_layout import LayoutPredictor
 from paddleocr.ppstructure.utility import draw_structure_result, cal_ocr_word_box
+import tempfile
 
 from PIL import Image
 
@@ -212,62 +213,49 @@ def load_structure_res(output_folder, img_name, img_idx=0):
     return results, img
 
 
-def main(args):
-    image_file_list = get_image_file_list(args.image_dir)
-    image_file_list = image_file_list
-    image_file_list = image_file_list[args.process_id:: args.total_process_num]
-
+def main(args, img):
     if not args.use_pdf2docx_api:
         structure_sys = StructureSystem(args)
-        save_folder = os.path.join(args.output, structure_sys.mode)
+        temp_dir = tempfile.TemporaryDirectory()
+        save_folder = os.path.join(temp_dir.name, structure_sys.mode)
         os.makedirs(save_folder, exist_ok=True)
-    img_num = len(image_file_list)
 
-    for i, image_file in enumerate(image_file_list):
-        logger.info("[{}/{}] {}".format(i, img_num, image_file))
-        img, flag_gif, flag_pdf = check_and_read(image_file)
-        img_name = os.path.basename(image_file).split(".")[0]
+        img_name = "image"
+        index=0
 
-        if not flag_gif and not flag_pdf:
-            img = cv2.imread(image_file)
+        res, time_dict = structure_sys(img, img_idx=index)
+        img_save_path = os.path.join(
+            save_folder, img_name, "show_{}.jpg".format(index)
+        )
+        os.makedirs(os.path.join(save_folder, img_name), exist_ok=True)
+        if structure_sys.mode == "structure" and res != []:
+            draw_img = draw_structure_result(img, res, font_path=args.vis_font_path)
 
-        if not flag_pdf:
-            if img is None:
-                logger.error("error in loading image:{}".format(image_file))
-                continue
-            imgs = [img]
-        else:
-            imgs = img
+            # Convert the NumPy array to a PIL image
+            if isinstance(draw_img, np.ndarray):
+                draw_img = Image.fromarray(draw_img)
 
-        for index, img in enumerate(imgs):
-            res, time_dict = structure_sys(img, img_idx=index)
-            img_save_path = os.path.join(
-                save_folder, img_name, "show_{}.jpg".format(index)
-            )
-            os.makedirs(os.path.join(save_folder, img_name), exist_ok=True)
-            if structure_sys.mode == "structure" and res != []:
-                draw_img = draw_structure_result(img, res, font_path=args.vis_font_path)
+            # Get the dimensions of the composite image
+            width, height = draw_img.size
 
-                # Convert the NumPy array to a PIL image
-                if isinstance(draw_img, np.ndarray):
-                    draw_img = Image.fromarray(draw_img)
+            # Calculate the midpoint (to divide into two parts)
+            midpoint = width // 2
 
-                # Get the dimensions of the composite image
-                width, height = draw_img.size
+            # Crop the left part (the annotated original image)
+            left_part = draw_img.crop((0, 0, midpoint, height))
 
-                # Calculate the midpoint (to divide into two parts)
-                midpoint = width // 2
+            # Convert the cropped image back to a NumPy array for further processing
+            left_part_np = np.array(left_part)
 
-                # Crop the left part (the annotated original image)
-                left_part = draw_img.crop((0, 0, midpoint, height))
+            save_structure_res(res, save_folder, img_name, index)
+        if res != []:
+            cv2.imwrite(img_save_path, left_part_np)
+            logger.info("result save to {}".format(img_save_path))
+    logger.info("Predict time : {:.3f}s".format(time_dict["all"]))
 
-                # Convert the cropped image back to a NumPy array for further processing
-                left_part_np = np.array(left_part)
+    res_, img_ = load_structure_res(temp_dir.name, img_name)
 
-                save_structure_res(res, save_folder, img_name, index)
-            if res != []:
-                cv2.imwrite(img_save_path, left_part_np)
-                logger.info("result save to {}".format(img_save_path))
-        logger.info("Predict time : {:.3f}s".format(time_dict["all"]))
+    temp_dir.cleanup()
 
-    return load_structure_res(args.output, img_name)
+
+    return res_, img_
