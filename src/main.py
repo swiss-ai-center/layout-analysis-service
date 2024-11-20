@@ -81,7 +81,7 @@ class MyService(Service):
 
         # Pass specific arguments directly
         args = custom_parse_args(
-            vis_font_path="Fonts/Arial.ttf",
+            vis_font_path="Fonts/arial.ttf",
             use_gpu=False,
             image_dir="img_dir",
             layout_model_dir="model/inference/picodet_lcnet_x1_0_layout_infer",
