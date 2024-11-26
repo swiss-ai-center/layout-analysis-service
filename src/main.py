@@ -173,11 +173,12 @@ Inputs:
 Outputs:
 - JSON File: A structured JSON file containing detected parts, including their bounding boxes (bboxes), types, 
 and confidence scores. Example:
-
+```json
     [
       {"type": "text", "bbox": [12, 730, 410, 848], "score": 0.7757388353347778},
       {"type": "table", "bbox": [15, 360, 405, 711], "score": 0.9503183960914612}
     ]
+```
 - Annotated Image: The original document image with bounding boxes drawn around detected regions, 
 labeled with their corresponding types.
 
@@ -185,7 +186,7 @@ Model Specifications:
 - Model: PP-PicoDet
 - Pretraining Dataset: PubTabNet
 - Model Size: 9.7 MB
-- Reference : https://github.com/PaddlePaddle/PaddleOCR
+- Reference : [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 """
 api_summary = """
 This service provides advanced layout analysis for document images, 
