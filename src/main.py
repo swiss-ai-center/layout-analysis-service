@@ -48,7 +48,7 @@ class MyService(Service):
             status=ServiceStatus.AVAILABLE,
             data_in_fields=[
                 FieldDescription(
-                    name="images",
+                    name="image",
                     type=[
                         FieldDescriptionType.IMAGE_JPEG, FieldDescriptionType.IMAGE_PNG
                     ],
@@ -92,8 +92,8 @@ class MyService(Service):
         )
 
         # Extract the image bytes from data
-        image_bytes = data["images"].data  # Extract the raw bytes of the image
-        input_type = data["images"].type
+        image_bytes = data["image"].data  # Extract the raw bytes of the image
+        input_type = data["image"].type
 
         # Decode the image from bytes
         img_ = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), 1)
@@ -189,7 +189,7 @@ Model Specifications:
 - Reference : [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 """
 api_summary = """
-This service provides advanced layout analysis for document images,
+This service provides advanced layout analysis for image based document,
 designed to detect and classify various content regions such as text, titles, tables, and figures.
 The service leverages PP-PicoDet, a state-of-the-art real-time object detection model optimized for mobile
 and lightweight deployments.
