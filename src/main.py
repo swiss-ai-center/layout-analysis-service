@@ -48,7 +48,7 @@ class MyService(Service):
             status=ServiceStatus.AVAILABLE,
             data_in_fields=[
                 FieldDescription(
-                    name="images",
+                    name="image",
                     type=[
                         FieldDescriptionType.IMAGE_JPEG, FieldDescriptionType.IMAGE_PNG
                     ],
@@ -92,8 +92,8 @@ class MyService(Service):
         )
 
         # Extract the image bytes from data
-        image_bytes = data["images"].data  # Extract the raw bytes of the image
-        input_type = data["images"].type
+        image_bytes = data["image"].data  # Extract the raw bytes of the image
+        input_type = data["image"].type
 
         # Decode the image from bytes
         img_ = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), 1)
@@ -167,16 +167,32 @@ async def lifespan(app: FastAPI):
 
 
 api_description = """
-Layout Analysis service takes an input image and processes it to extract detailed structural information.
-The service generates output images annotated with bounding boxes (bboxes) that highlight detected elements,
-making it easy to visualize the layout.
-Additionally, it provides a JSON-formatted result that describes these detected regions,
-including their positions and attributes,
-facilitating seamless integration with data workflows and further analysis.
-Ideal for document processing, digitization, and automated layout understanding,
-this service ensures accuracy and clarity in presenting image-based layout insights.
+Inputs:
+- Document Image: A single image-based document (JPEG, PNG).
+
+Outputs:
+- JSON File: A structured JSON file containing detected parts, including their bounding boxes (bboxes), types,
+and confidence scores. Example:
+```json
+    [
+      {"type": "text", "bbox": [12, 730, 410, 848], "score": 0.7757388353347778},
+      {"type": "table", "bbox": [15, 360, 405, 711], "score": 0.9503183960914612}
+    ]
+```
+- Annotated Image: The original document image with bounding boxes drawn around detected regions,
+labeled with their corresponding types.
+
+Model Specifications:
+- Model: PP-PicoDet
+- Pretraining Dataset: PubTabNet
+- Model Size: 9.7 MB
+- Reference : [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 """
-api_summary = """Layout Analysis detect part of an image-based document using PP-PicoDet.
+api_summary = """
+This service provides advanced layout analysis for image based document,
+designed to detect and classify various content regions such as text, titles, tables, and figures.
+The service leverages PP-PicoDet, a state-of-the-art real-time object detection model optimized for mobile
+and lightweight deployments.
 """
 
 # Define the FastAPI application with information
