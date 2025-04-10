@@ -15,7 +15,6 @@ botocore==1.34.51
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
-common_code @ git+https://github.com/swiss-ai-center/common-code.git@6445b2305a299afbdbdd70c9efd7c94865cc91d6
 contourpy==1.3.1
 coverage==7.8.0
 cycler==0.12.1
