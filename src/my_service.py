@@ -134,7 +134,6 @@ class MyService(Service):
         }
 
 
-
 def custom_parse_args(**kwargs):
     # Temporarily override `sys.argv`
     import sys  # noqa: E402
